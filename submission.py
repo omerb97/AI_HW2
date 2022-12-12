@@ -56,7 +56,35 @@ def dumb_heuristic2(state, agent_id):
 
 
 def smart_heuristic(state, agent_id):
-    return
+    VALUE_PER_PIECE = {
+        "B":4,
+        "M":2,
+        "S":1
+    }
+    utility = 0
+    state = env.get_state()
+    myAgent = state.player1_pawns
+    for key in myAgent.keys():
+        piece = myAgent[key]
+        if piece[0] != not_on_board:
+            if  piece[0] == 4:
+                utility += (4 * VALUE_PER_PIECE[piece[1]])
+            elif piece[0] == 0 or piece[0] == 2 or piece[0] == 6 or piece[0] == 8:
+                utility += (3 * VALUE_PER_PIECE[piece[1]])
+            else:
+                utility += (2 * VALUE_PER_PIECE[piece[1]])
+
+    adversery = state.player2_pawns
+    for key in adversery.keys():
+        piece = adversery[key]
+        if piece[0] != not_on_board:
+            if  piece[0] == 4:
+                utility -= (4 * VALUE_PER_PIECE[piece[1]])
+            elif piece[0] == 0 or piece[0] == 2 or piece[0] == 6 or piece[0] == 8:
+                utility -= (3 * VALUE_PER_PIECE[piece[1]])
+            else:
+                utility -= (2 * VALUE_PER_PIECE[piece[1]])
+                
 
 
 # IMPLEMENTED FOR YOU - NO NEED TO CHANGE
