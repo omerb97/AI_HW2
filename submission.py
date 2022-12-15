@@ -62,28 +62,30 @@ def smart_heuristic(state, agent_id):
         "S":1
     }
     utility = 0
-    state = env.get_state()
-    myAgent = state.player1_pawns
-    for key in myAgent.keys():
-        piece = myAgent[key]
-        if piece[0] != not_on_board:
-            if  piece[0] == 4:
-                utility += (4 * VALUE_PER_PIECE[piece[1]])
-            elif piece[0] == 0 or piece[0] == 2 or piece[0] == 6 or piece[0] == 8:
-                utility += (3 * VALUE_PER_PIECE[piece[1]])
+    player1 = state.player1_pawns
+    for key, value in player1.items():
+        if not np.array_equal(value[0], not_on_board):
+            if  np.array_equal(value[0],np.array([1,1])):
+                utility += (4 * VALUE_PER_PIECE[value[1]])
+            elif np.array_equal(value[0],np.array([0,0])) or np.array_equal(value[0],np.array([0,2])) or np.array_equal(value[0],np.array([2,0])) or np.array_equal(value[0],np.array([2,2])):
+                utility += (3 * VALUE_PER_PIECE[value[1]])
             else:
-                utility += (2 * VALUE_PER_PIECE[piece[1]])
+                utility += (2 * VALUE_PER_PIECE[value[1]])
 
-    adversery = state.player2_pawns
-    for key in adversery.keys():
-        piece = adversery[key]
-        if piece[0] != not_on_board:
-            if  piece[0] == 4:
-                utility -= (4 * VALUE_PER_PIECE[piece[1]])
-            elif piece[0] == 0 or piece[0] == 2 or piece[0] == 6 or piece[0] == 8:
-                utility -= (3 * VALUE_PER_PIECE[piece[1]])
+    player2 = state.player2_pawns
+    for key,value in player2.items():
+        if not np.array_equal(value[0], not_on_board):
+            if  np.array_equal(value[0],np.array([1,1])):
+                utility -= (4 * VALUE_PER_PIECE[value[1]])
+            elif np.array_equal(value[0],np.array([0,0])) or np.array_equal(value[0],np.array([0,2])) or np.array_equal(value[0],np.array([2,0])) or np.array_equal(value[0],np.array([2,2])):
+                utility -= (3 * VALUE_PER_PIECE[value[1]])
             else:
-                utility -= (2 * VALUE_PER_PIECE[piece[1]])
+
+                utility -= (2 * VALUE_PER_PIECE[value[1]])
+    if agent_id == 1:
+        return -1*utility
+    else:
+        return utility
                 
 
 
@@ -123,8 +125,16 @@ def greedy(curr_state, agent_id, time_limit):
 
 # TODO - add your code here
 def greedy_improved(curr_state, agent_id, time_limit):
-    raise NotImplementedError()
-
+    neighbor_list = curr_state.get_neighbors()
+    max_heuristic = -1000
+    max_neighbor = None
+    for neighbor in neighbor_list:
+        curr_heuristic = smart_heuristic(neighbor[1], agent_id)
+        print(curr_heuristic)
+        if curr_heuristic >= max_heuristic:
+            max_heuristic = curr_heuristic
+            max_neighbor = neighbor
+    return max_neighbor[0]
 
 def rb_heuristic_min_max(curr_state, agent_id, time_limit):
     raise NotImplementedError()
