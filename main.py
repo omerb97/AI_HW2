@@ -8,5 +8,5 @@ if __name__ == '__main__':
 
     # PART2
     game.play_tournament("minimax", "random", 50)
-    #game.play_tournament("greedy_improved", "random", 50)
-    #game.play_tournament("greedy", "greedy_improved", 50)
+    #game.play_tournament("minimax", "greedy", 50)
+    #game.play_tournament("minimax", "greedy_improved", 50)

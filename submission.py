@@ -9,7 +9,7 @@ import math
 
 not_on_board = np.array([-1, -1])
 WON = 420
-LOST = -420
+LOSE = -420
 
 # agent_id is which player I am, 0 - for the first player , 1 - if second player
 def dumb_heuristic1(state, agent_id):
@@ -141,46 +141,47 @@ def greedy_improved(curr_state, agent_id, time_limit):
     return max_neighbor[0]
 
 def heuristic_wrapper(curr_state, agent_id, time_limit):
-    is_final = gge.is_final_state(state)
-    if is_final:
-        if is_final == agent_id:
+    is_final = gge.is_final_state(curr_state)
+    print(is_final)
+    if is_final is not None:
+        if (int(is_final)-1) == agent_id:
             return WON
         else:
             return LOSE
-    return smart_heuristic(curr_state,agent_id, time_limit)
+    return smart_heuristic(curr_state,agent_id)
         
 def rb_heuristic_min_max_L(curr_state, agent_id, time_limit, L):
     if gge.is_final_state(curr_state) or L == 0:
-        return heuristic_wrapper(curr_state, agent_id, time_limit)
+        return (heuristic_wrapper(curr_state, agent_id, time_limit), None)
     turnFlag = 1
-    if (agent_id == 1 and curr_state.turn == 0) or (agent_id == 2 and curr_state.turn == 1):
-        turnFlag == 0
+    if agent_id == curr_state.turn:
+        turnFlag = 0
     neighbors= curr_state.get_neighbors()
     if turnFlag == 0:
         curMax = -math.inf 
         curMaxChild = None
         for child in neighbors:
-            v = rb_heuristic_min_max_L(child,agent_id,L-1,time_limit)
+            v = rb_heuristic_min_max_L(child[1],agent_id,time_limit,L-1)[0]
             if v>curMax:
                 curMax = v
                 curMaxChild = child
-        return (curMax, curMaxChild)
+        return (curMax, curMaxChild[0])
     else:
         curMin = math.inf 
         curMinChild = None
         for child in neighbors:
-            v = rb_heuristic_min_max_L(child,agent_id,L-1,time_limit)
+            v = rb_heuristic_min_max_L(child[1],agent_id,time_limit,L-1)[0]
             if v<curMin:
                 curMin = v
                 curMinChild = child
-        return (curMin, curMinChild)
+        return (curMin, curMinChild[0])
 
 def rb_heuristic_min_max(curr_state, agent_id, time_limit):
     startTime = time.time()
     bestMove = None
     bestMoveHeuristic = -math.inf
     L=1
-    while time.time() - startTime > time_limit:
+    while time.time() - startTime < time_limit:
         bestMove = rb_heuristic_min_max_L(curr_state,agent_id,time_limit,L)
         L+=1
     return bestMove[1]
