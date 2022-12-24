@@ -52,6 +52,55 @@ class RB_Mini_Max:
                     curMin = v
                     curMinChild = child
             return (curMin, curMinChild[0])
+
+
+class RB_Alpha_Beta:
+    def __init__(self,curr_state,agent_id):
+        self.curr_state = curr_state
+        self.agent_id = agent_id
+        self.bestMove = None
+    
+    def alpha_beta(self, event):
+        bestMoveHeuristic = -math.inf
+        L=1
+        while True:
+            print("depth is: " + str(L))
+            self.bestMove = self.rb_heuristic_alpha_beta_L(self.curr_state,self.agent_id,L,-math.inf,math.inf)
+            L+=1
+            if event.is_set():
+                break
+
+    def rb_heuristic_alpha_beta_L(self, curr_state, agent_id,L, alpha,beta):
+        if gge.is_final_state(curr_state) or L == 0:
+            return (heuristic_wrapper(curr_state, agent_id), None)
+        turnFlag = 1
+        if agent_id == curr_state.turn:
+            turnFlag = 0
+        neighbors= curr_state.get_neighbors()
+        if turnFlag == 0:
+            curMax = -math.inf 
+            curMaxChild = None
+            for child in neighbors:
+                v = self.rb_heuristic_alpha_beta_L(child[1],agent_id,L-1,alpha,beta)[0]
+                alpha = max(alpha, curMax)
+                if curMax > beta:
+                    return (math.inf, curMaxChild[0])
+                if v>=curMax:
+                    curMax = v
+                    curMaxChild = child
+            return (curMax, curMaxChild[0])
+        else:
+            curMin = math.inf 
+            curMinChild = None
+            for child in neighbors:
+                v = self.rb_heuristic_alpha_beta_L(child[1],agent_id,L-1,alpha,beta)[0]
+                beta = min(beta,curMin )
+                if curMin < alpha:
+                    return(-math.inf, curMinChild[0])
+                if v<=curMin:
+                    curMin = v
+                    curMinChild = child
+            return (curMin, curMinChild[0])
         
         
 
@@ -242,7 +291,15 @@ def rb_heuristic_min_max(curr_state, agent_id, time_limit):
     return rb_minimax.bestMove[1]
 
 def alpha_beta(curr_state, agent_id, time_limit):
-    raise NotImplementedError()
+    rb_alpha_beta = RB_Alpha_Beta(curr_state=curr_state, agent_id=agent_id)
+    event = threading.Event()
+
+    rb_alpha_beta_thread = threading.Thread (target=rb_alpha_beta.alpha_beta, args= (event,))
+    rb_alpha_beta_thread.start()
+    rb_alpha_beta_thread.join(timeout=time_limit-0.2)
+    event.set()
+    #rb_minimax_thread.stop()
+    return rb_alpha_beta.bestMove[1]
 
 
 def expectimax(curr_state, agent_id, time_limit):
