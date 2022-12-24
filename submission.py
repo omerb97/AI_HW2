@@ -1,5 +1,5 @@
 import random
-
+import threading
 import numpy as np
 
 import Gobblet_Gobblers_Env as gge
@@ -10,6 +10,51 @@ import math
 not_on_board = np.array([-1, -1])
 WON = 420
 LOSE = -420
+
+class RB_Mini_Max:
+    def __init__(self,curr_state,agent_id):
+        self.curr_state = curr_state
+        self.agent_id = agent_id
+        self.bestMove = None
+    
+    def mini_max(self, event):
+        bestMoveHeuristic = -math.inf
+        L=1
+        while True:
+            print("depth is: " + str(L))
+            self.bestMove = self.rb_heuristic_min_max_L(self.curr_state,self.agent_id,L)
+            L+=1
+            if event.is_set():
+                break
+
+    def rb_heuristic_min_max_L(self, curr_state, agent_id,L):
+        if gge.is_final_state(curr_state) or L == 0:
+            return (heuristic_wrapper(curr_state, agent_id), None)
+        turnFlag = 1
+        if agent_id == curr_state.turn:
+            turnFlag = 0
+        neighbors= curr_state.get_neighbors()
+        if turnFlag == 0:
+            curMax = -math.inf 
+            curMaxChild = None
+            for child in neighbors:
+                v = self.rb_heuristic_min_max_L(child[1],agent_id,L-1)[0]
+                if v>curMax:
+                    curMax = v
+                    curMaxChild = child
+            return (curMax, curMaxChild[0])
+        else:
+            curMin = math.inf 
+            curMinChild = None
+            for child in neighbors:
+                v = self.rb_heuristic_min_max_L(child[1],agent_id,L-1)[0]
+                if v<curMin:
+                    curMin = v
+                    curMinChild = child
+            return (curMin, curMinChild[0])
+        
+        
+
 
 # agent_id is which player I am, 0 - for the first player , 1 - if second player
 def dumb_heuristic1(state, agent_id):
@@ -134,15 +179,15 @@ def greedy_improved(curr_state, agent_id, time_limit):
     max_neighbor = None
     for neighbor in neighbor_list:
         curr_heuristic = smart_heuristic(neighbor[1], agent_id)
-        print(curr_heuristic)
+        #print(curr_heuristic)
         if curr_heuristic >= max_heuristic:
             max_heuristic = curr_heuristic
             max_neighbor = neighbor
     return max_neighbor[0]
 
-def heuristic_wrapper(curr_state, agent_id, time_limit):
+def heuristic_wrapper(curr_state, agent_id):
     is_final = gge.is_final_state(curr_state)
-    print(is_final)
+    #print(is_final)
     if is_final is not None:
         if (int(is_final)-1) == agent_id:
             return WON
@@ -150,41 +195,51 @@ def heuristic_wrapper(curr_state, agent_id, time_limit):
             return LOSE
     return smart_heuristic(curr_state,agent_id)
         
-def rb_heuristic_min_max_L(curr_state, agent_id, time_limit, L):
-    if gge.is_final_state(curr_state) or L == 0:
-        return (heuristic_wrapper(curr_state, agent_id, time_limit), None)
-    turnFlag = 1
-    if agent_id == curr_state.turn:
-        turnFlag = 0
-    neighbors= curr_state.get_neighbors()
-    if turnFlag == 0:
-        curMax = -math.inf 
-        curMaxChild = None
-        for child in neighbors:
-            v = rb_heuristic_min_max_L(child[1],agent_id,time_limit,L-1)[0]
-            if v>curMax:
-                curMax = v
-                curMaxChild = child
-        return (curMax, curMaxChild[0])
-    else:
-        curMin = math.inf 
-        curMinChild = None
-        for child in neighbors:
-            v = rb_heuristic_min_max_L(child[1],agent_id,time_limit,L-1)[0]
-            if v<curMin:
-                curMin = v
-                curMinChild = child
-        return (curMin, curMinChild[0])
+# def rb_heuristic_min_max_L(curr_state, agent_id, L):
+#     if gge.is_final_state(curr_state) or L == 0:
+#         return (heuristic_wrapper(curr_state, agent_id), None)
+#     turnFlag = 1
+#     if agent_id == curr_state.turn:
+#         turnFlag = 0
+#     neighbors= curr_state.get_neighbors()
+#     if turnFlag == 0:
+#         curMax = -math.inf 
+#         curMaxChild = None
+#         for child in neighbors:
+#             v = rb_heuristic_min_max_L(child[1],agent_id,L-1)[0]
+#             if v>curMax:
+#                 curMax = v
+#                 curMaxChild = child
+#         return (curMax, curMaxChild[0])
+#     else:
+#         curMin = math.inf 
+#         curMinChild = None
+#         for child in neighbors:
+#             v = rb_heuristic_min_max_L(child[1],agent_id,L-1)[0]
+#             if v<curMin:
+#                 curMin = v
+#                 curMinChild = child
+#         return (curMin, curMinChild[0])
+
+# bestMove = None
+
+# def mini_max(curr_state,agent_id):
+#     bestMoveHeuristic = -math.inf
+#     L=1
+#     while True:
+#         bestMove = rb_heuristic_min_max_L(curr_state,agent_id,L)
+#         L+=1
 
 def rb_heuristic_min_max(curr_state, agent_id, time_limit):
-    startTime = time.time()
-    bestMove = None
-    bestMoveHeuristic = -math.inf
-    L=1
-    while time.time() - startTime < time_limit:
-        bestMove = rb_heuristic_min_max_L(curr_state,agent_id,time_limit,L)
-        L+=1
-    return bestMove[1]
+    rb_minimax = RB_Mini_Max(curr_state=curr_state, agent_id=agent_id)
+    event = threading.Event()
+
+    rb_minimax_thread = threading.Thread (target=rb_minimax.mini_max, args= (event,))
+    rb_minimax_thread.start()
+    rb_minimax_thread.join(timeout=time_limit-0.2)
+    event.set()
+    #rb_minimax_thread.stop()
+    return rb_minimax.bestMove[1]
 
 def alpha_beta(curr_state, agent_id, time_limit):
     raise NotImplementedError()
