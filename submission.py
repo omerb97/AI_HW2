@@ -102,7 +102,31 @@ class RB_Alpha_Beta:
                     curMinChild = child
             return (curMin, curMinChild[0])
         
-        
+
+def arrayToInt(arrayForm):
+    return arrayForm[0]*3 +arrayForm[1]
+
+def Probability_Func(state):
+    positions = [0]*9
+    for pawn, pos in state.player1_pawns.items():
+        if pos[0] != not_on_board:
+           positions[arrayToInt(pos[0])] = 1 
+    for pawn, pos in state.player2_pawns.items():
+        if pos[0] != not_on_board:
+           positions[arrayToInt(pos[0])] = 1  
+    possible_neighbors = state.get_neighbors(state)
+    probArr = []
+    smallCount = 0
+    eatCount = 0
+    for neighbor in possible_neighbors:
+
+        action = neighbor[0]
+        newState = neighbor[1]
+        if action[0] == "S1" or action[0] == "S2":
+            smallCount += 1
+        if positions[arrayToInt(action[1])] == 1:
+            eatCount += 1 
+
 
 
 # agent_id is which player I am, 0 - for the first player , 1 - if second player
