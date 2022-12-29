@@ -4,7 +4,6 @@ import numpy as np
 
 import Gobblet_Gobblers_Env as gge
 
-import time
 import math
 
 not_on_board = np.array([-1, -1])
@@ -29,7 +28,7 @@ class RB_Mini_Max:
 
     def rb_heuristic_min_max_L(self, curr_state, agent_id,L):
         if gge.is_final_state(curr_state) or L == 0:
-            return (heuristic_wrapper(curr_state, agent_id), None)
+            return (heuristic_wrapper(curr_state, agent_id), None)-L
         turnFlag = 1
         if agent_id == curr_state.turn:
             turnFlag = 0
@@ -72,7 +71,7 @@ class RB_Alpha_Beta:
 
     def rb_heuristic_alpha_beta_L(self, curr_state, agent_id,L, alpha,beta):
         if gge.is_final_state(curr_state) or L == 0:
-            return (heuristic_wrapper(curr_state, agent_id), None)
+            return (heuristic_wrapper(curr_state, agent_id), None)-L
         turnFlag = 1
         if agent_id == curr_state.turn:
             turnFlag = 0
@@ -124,7 +123,7 @@ class RB_Expectimax:
 
     def rb_expectimax_L(self, curr_state, agent_id,L):
         if gge.is_final_state(curr_state) or L == 0:
-            return (heuristic_wrapper(curr_state, agent_id), None)
+            return (heuristic_wrapper(curr_state, agent_id), None)-L
         turnFlag = 1
         if agent_id == curr_state.turn:
             turnFlag = 0
