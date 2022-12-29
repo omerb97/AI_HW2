@@ -117,27 +117,27 @@ def is_legal_step(action, curr_state):
     }
 
     if len(action[0]) != 2:
-        print("ILLEGAL pawn type")
+        #print("ILLEGAL pawn type")
         return False
     if len(str(action[1])) != 1:
-        print("ILLEGAL location type")
+        #print("ILLEGAL location type")
         return False
     if action[1] > 8 or action[1] < 0:
-        print("ILLEGAL location type")
+        #print("ILLEGAL location type")
         return False
 
     if action[0][0] != "B" and action[0][0] != "M" and action[0][0] != "S":
-        print("ILLEGAL pawn type")
+        #print("ILLEGAL pawn type")
         return False
     if action[0][1] != "1" and action[0][1] != "2":
-        print("ILLEGAL pawn type")
+        #print("ILLEGAL pawn type")
         return False
     # checks if there is an attempt to place pawn on smaller pawn
     location = action_to_direction[action[1]]
     for key, value in pawn_list.items():
         if np.array_equal(value[0], location):
             if size_cmp(value[1], action[0][0]) >= 0:
-                print("ILLEGAL placement of pawn")
+                #print("ILLEGAL placement of pawn")
                 return False
 
     # finding current location
@@ -148,7 +148,7 @@ def is_legal_step(action, curr_state):
         for key, value in pawn_list.items():
             if np.array_equal(value[0], curr_location):
                 if size_cmp(value[1], action[0][0]) > 0:
-                    print("ILLEGAL pawn selection")
+                    #print("ILLEGAL pawn selection")
                     return False
     return True
 

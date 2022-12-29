@@ -362,7 +362,7 @@ def rb_heuristic_min_max(curr_state, agent_id, time_limit):
 
     rb_minimax_thread = threading.Thread (target=rb_minimax.mini_max, args= (event,))
     rb_minimax_thread.start()
-    rb_minimax_thread.join(timeout=time_limit-0.2)
+    rb_minimax_thread.join(timeout=time_limit-2)
     event.set()
     #rb_minimax_thread.stop()
     return rb_minimax.bestMove[1]
@@ -373,7 +373,7 @@ def alpha_beta(curr_state, agent_id, time_limit):
 
     rb_alpha_beta_thread = threading.Thread (target=rb_alpha_beta.alpha_beta, args= (event,))
     rb_alpha_beta_thread.start()
-    rb_alpha_beta_thread.join(timeout=time_limit-0.2)
+    rb_alpha_beta_thread.join(timeout=time_limit-2)
     event.set()
     #rb_minimax_thread.stop()
     return rb_alpha_beta.bestMove[1]
@@ -385,7 +385,7 @@ def expectimax(curr_state, agent_id, time_limit):
 
     rb_expectimax_thread = threading.Thread (target=rb_expectimax.Expectimax, args= (event,))
     rb_expectimax_thread.start()
-    rb_expectimax_thread.join(timeout=time_limit-0.2)
+    rb_expectimax_thread.join(timeout=time_limit-2)
     event.set()
     #rb_minimax_thread.stop()
     return rb_expectimax.bestMove[1] 
