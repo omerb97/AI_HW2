@@ -106,27 +106,81 @@ class RB_Alpha_Beta:
 def arrayToInt(arrayForm):
     return arrayForm[0]*3 +arrayForm[1]
 
-def Probability_Func(state):
-    positions = [0]*9
-    for pawn, pos in state.player1_pawns.items():
-        if pos[0] != not_on_board:
-           positions[arrayToInt(pos[0])] = 1 
-    for pawn, pos in state.player2_pawns.items():
-        if pos[0] != not_on_board:
-           positions[arrayToInt(pos[0])] = 1  
-    possible_neighbors = state.get_neighbors(state)
-    probArr = []
-    smallCount = 0
-    eatCount = 0
-    for neighbor in possible_neighbors:
+class RB_Expectimax:
+    def __init__(self,curr_state,agent_id):
+        self.curr_state = curr_state
+        self.agent_id = agent_id
+        self.bestMove = None
+    
+    def Expectimax(self, event):
+        bestMoveHeuristic = -math.inf
+        L=1
+        while True:
+            print("depth is: " + str(L))
+            self.bestMove = self.rb_expectimax_L(self.curr_state,self.agent_id,L)
+            L+=1
+            if event.is_set():
+                break
 
-        action = neighbor[0]
-        newState = neighbor[1]
-        if action[0] == "S1" or action[0] == "S2":
-            smallCount += 1
-        if positions[arrayToInt(action[1])] == 1:
-            eatCount += 1 
+    def rb_expectimax_L(self, curr_state, agent_id,L):
+        if gge.is_final_state(curr_state) or L == 0:
+            return (heuristic_wrapper(curr_state, agent_id), None)
+        turnFlag = 1
+        if agent_id == curr_state.turn:
+            turnFlag = 0
+        neighbors= curr_state.get_neighbors()
+        if turnFlag == 0:
+            curMax = -math.inf 
+            curMaxChild = None
+            for child in neighbors:
+                v = self.rb_expectimax_L(child[1],agent_id,L-1)[0]
+                if v>curMax:
+                    curMax = v
+                    curMaxChild = child
+            return (curMax, curMaxChild[0])
+        else:
+            curExp = 0
+            probArr = self.Probability_Func(curr_state)
+            for item in probArr:
+                curExp += item[2] * self.rb_expectimax_L(probArr[1], agent_id, L-1)[0]
+            return (curExp,neighbors[0])
+    
 
+
+    def Probability_Func(self, state):
+        positions = [0]*9
+        for pawn, pos in state.player1_pawns.items():
+            if pos[0] != not_on_board:
+                positions[arrayToInt(pos[0])] = 1 
+        for pawn, pos in state.player2_pawns.items():
+            if pos[0] != not_on_board:
+                positions[arrayToInt(pos[0])] = 1  
+        possible_neighbors = state.get_neighbors(state)
+        smallCount = 0
+        eatCount = 0
+        for neighbor in possible_neighbors:
+
+            action = neighbor[0]
+            newState = neighbor[1]
+            if action[0] == "S1" or action[0] == "S2":
+                smallCount += 1
+            if positions[arrayToInt(action[1])] == 1:
+                eatCount += 1 
+
+        prob = len(possible_neighbors) + smallCount + eatCount
+        new_neighbors = []
+        for neighbor in possible_neighbors:
+            action = neighbor[0]
+            newState = neighbor[1]
+            if action[0] == "S1" or action[0] == "S2":
+                new_neighbors.append((action,newState, 2/prob))
+            elif positions[arrayToInt(action[1])] == 1:
+                new_neighbors.append((action,newState, 2/prob))
+            else:
+                new_neighbors.append((action,newState,1/prob))
+        return new_neighbors
+
+    
 
 
 # agent_id is which player I am, 0 - for the first player , 1 - if second player
@@ -327,7 +381,15 @@ def alpha_beta(curr_state, agent_id, time_limit):
 
 
 def expectimax(curr_state, agent_id, time_limit):
-    raise NotImplementedError()
+    rb_expectimax = RB_Expectimax(curr_state=curr_state, agent_id=agent_id)
+    event = threading.Event()
+
+    rb_expectimax_thread = threading.Thread (target=rb_expectimax.Expectimax, args= (event,))
+    rb_expectimax_thread.start()
+    rb_expectimax_thread.join(timeout=time_limit-0.2)
+    event.set()
+    #rb_minimax_thread.stop()
+    return rb_expectimax.bestMove[1] 
 
 # these is the BONUS - not mandatory
 def super_agent(curr_state, agent_id, time_limit):
