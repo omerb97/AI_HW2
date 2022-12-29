@@ -117,27 +117,27 @@ def is_legal_step(action, curr_state):
     }
 
     if len(action[0]) != 2:
-        #print("ILLEGAL pawn type")
+        print("ILLEGAL pawn type")
         return False
     if len(str(action[1])) != 1:
-        #print("ILLEGAL location type")
+        print("ILLEGAL location type")
         return False
     if action[1] > 8 or action[1] < 0:
-        #print("ILLEGAL location type")
+        print("ILLEGAL location type")
         return False
 
     if action[0][0] != "B" and action[0][0] != "M" and action[0][0] != "S":
-        #print("ILLEGAL pawn type")
+        print("ILLEGAL pawn type")
         return False
     if action[0][1] != "1" and action[0][1] != "2":
-        #print("ILLEGAL pawn type")
+        print("ILLEGAL pawn type")
         return False
     # checks if there is an attempt to place pawn on smaller pawn
     location = action_to_direction[action[1]]
     for key, value in pawn_list.items():
         if np.array_equal(value[0], location):
             if size_cmp(value[1], action[0][0]) >= 0:
-                #print("ILLEGAL placement of pawn")
+                print("ILLEGAL placement of pawn")
                 return False
 
     # finding current location
@@ -148,7 +148,7 @@ def is_legal_step(action, curr_state):
         for key, value in pawn_list.items():
             if np.array_equal(value[0], curr_location):
                 if size_cmp(value[1], action[0][0]) > 0:
-                    #print("ILLEGAL pawn selection")
+                    print("ILLEGAL pawn selection")
                     return False
     return True
 
@@ -237,7 +237,7 @@ def is_final_state(curr_state):
             if win is None:
                 win = arr[i][0]
             else:
-                if win is not arr[i][0]:
+                if win != arr[i][0]:
                     return 0
 
     # check columns
@@ -247,7 +247,7 @@ def is_final_state(curr_state):
             if win is None:
                 win = arr[0][j]
             else:
-                if win is not arr[0][j]:
+                if win != arr[0][j]:
                     return 0
 
     # check obliques
@@ -256,7 +256,7 @@ def is_final_state(curr_state):
         if win is None:
             win = arr[0][0]
         else:
-            if win is not arr[0][0]:
+            if win != arr[0][0]:
                 return 0
 
     if arr[0][2] == arr[1][1] and arr[2][0] == arr[1][1] and (not arr[0][2] == " ") and (not arr[1][1] == " ") and (
@@ -264,7 +264,7 @@ def is_final_state(curr_state):
         if win is None:
             win = arr[1][1]
         else:
-            if win is not arr[1][1]:
+            if win != arr[1][1]:
                 return 0
 
     if win is 1:
