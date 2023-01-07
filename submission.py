@@ -229,11 +229,49 @@ def dumb_heuristic2(state, agent_id):
 
     return sum_pawns
 
+def IsCovered(pieceSize, place, state):
+    NOT_COVERED = 1
+    M_COVERED = 0.5
+    S_COVERED_ONCE = 2/3
+    S_COVERED_TWICE = 1/3
+    player1 = state.player1_pawns
+    player2 = state.player2_pawns
+    if pieceSize == "B":
+        return NOT_COVERED
+    if pieceSize == "M":
+        for key, value in player1.items():
+            if not np.array_equal(value[0], not_on_board):
+                if  np.array_equal(value[0],place) and value[1] == "B":
+                    return M_COVERED
+        for key, value in player2.items():
+            if not np.array_equal(value[0], not_on_board):
+                if  np.array_equal(value[0],place) and value[1] == "B":
+                    return M_COVERED
+        return NOT_COVERED
+    
+    if pieceSize == "S":
+        counter = 0
+        for key, value in player1.items():
+            if not np.array_equal(value[0], not_on_board):
+                if  np.array_equal(value[0],place) and value[1] == "B" or value[1] == "M":
+                    counter += 1
+        for key, value in player2.items():
+            if not np.array_equal(value[0], not_on_board):
+                if  np.array_equal(value[0],place) and value[1] == "B" or value[1] == "M":
+                    counter += 1
+        if counter == 0:
+            return NOT_COVERED
+        if counter == 1:
+            return S_COVERED_ONCE
+        if counter == 2:
+            return S_COVERED_TWICE
+    return NOT_COVERED
 
+        
 def smart_heuristic(state, agent_id):
     VALUE_PER_PIECE = {
-        "B":4,
-        "M":2,
+        "B":9,
+        "M":3,
         "S":1
     }
     utility = 0
@@ -241,22 +279,21 @@ def smart_heuristic(state, agent_id):
     for key, value in player1.items():
         if not np.array_equal(value[0], not_on_board):
             if  np.array_equal(value[0],np.array([1,1])):
-                utility += (4 * VALUE_PER_PIECE[value[1]])
+                utility += ((4 * VALUE_PER_PIECE[value[1]]) * IsCovered(value[1],value[0], state))
             elif np.array_equal(value[0],np.array([0,0])) or np.array_equal(value[0],np.array([0,2])) or np.array_equal(value[0],np.array([2,0])) or np.array_equal(value[0],np.array([2,2])):
-                utility += (3 * VALUE_PER_PIECE[value[1]])
+                utility += ((3 * VALUE_PER_PIECE[value[1]]) * IsCovered(value[1],value[0], state))
             else:
-                utility += (2 * VALUE_PER_PIECE[value[1]])
+                utility += ((2 * VALUE_PER_PIECE[value[1]]) * IsCovered(value[1],value[0], state))
 
     player2 = state.player2_pawns
     for key,value in player2.items():
         if not np.array_equal(value[0], not_on_board):
             if  np.array_equal(value[0],np.array([1,1])):
-                utility -= (4 * VALUE_PER_PIECE[value[1]])
+                utility -= ((4 * VALUE_PER_PIECE[value[1]]) * IsCovered(value[1],value[0], state))
             elif np.array_equal(value[0],np.array([0,0])) or np.array_equal(value[0],np.array([0,2])) or np.array_equal(value[0],np.array([2,0])) or np.array_equal(value[0],np.array([2,2])):
-                utility -= (3 * VALUE_PER_PIECE[value[1]])
+                utility -= ((3 * VALUE_PER_PIECE[value[1]]) * IsCovered(value[1],value[0], state))
             else:
-
-                utility -= (2 * VALUE_PER_PIECE[value[1]])
+                utility -= ((2 * VALUE_PER_PIECE[value[1]])* IsCovered(value[1],value[0], state))
     if agent_id == 1:
         return -1*utility
     else:
@@ -321,41 +358,6 @@ def heuristic_wrapper(curr_state, agent_id):
             return LOSE
     return smart_heuristic(curr_state,agent_id)
         
-# def rb_heuristic_min_max_L(curr_state, agent_id, L):
-#     if gge.is_final_state(curr_state) or L == 0:
-#         return (heuristic_wrapper(curr_state, agent_id), None)
-#     turnFlag = 1
-#     if agent_id == curr_state.turn:
-#         turnFlag = 0
-#     neighbors= curr_state.get_neighbors()
-#     if turnFlag == 0:
-#         curMax = -math.inf 
-#         curMaxChild = None
-#         for child in neighbors:
-#             v = rb_heuristic_min_max_L(child[1],agent_id,L-1)[0]
-#             if v>curMax:
-#                 curMax = v
-#                 curMaxChild = child
-#         return (curMax, curMaxChild[0])
-#     else:
-#         curMin = math.inf 
-#         curMinChild = None
-#         for child in neighbors:
-#             v = rb_heuristic_min_max_L(child[1],agent_id,L-1)[0]
-#             if v<curMin:
-#                 curMin = v
-#                 curMinChild = child
-#         return (curMin, curMinChild[0])
-
-# bestMove = None
-
-# def mini_max(curr_state,agent_id):
-#     bestMoveHeuristic = -math.inf
-#     L=1
-#     while True:
-#         bestMove = rb_heuristic_min_max_L(curr_state,agent_id,L)
-#         L+=1
-
 def rb_heuristic_min_max(curr_state, agent_id, time_limit):
     rb_minimax = RB_Mini_Max(curr_state=curr_state, agent_id=agent_id)
     event = threading.Event()
